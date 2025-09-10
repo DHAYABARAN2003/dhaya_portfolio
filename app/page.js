@@ -1,4 +1,50 @@
+// import { personalData } from "@/utils/data/personal-data";
+// import AboutSection from "./components/homepage/about";
+// import Blog from "./components/homepage/blog";
+// import ContactSection from "./components/homepage/contact";
+// import Education from "./components/homepage/education";
+// import Experience from "./components/homepage/experience";
+// import HeroSection from "./components/homepage/hero-section";
+// import Projects from "./components/homepage/projects";
+// import Skills from "./components/homepage/skills";
+
+// async function getData() {
+//   const res = await fetch(`https://dev.to/api/articles?username=${personalData.devUsername}`)
+
+//   if (!res.ok) {
+//     throw new Error('Failed to fetch data')
+//   }
+
+//   const data = await res.json();
+
+//   const filtered = data.filter((item) => item?.cover_image).sort(() => Math.random() - 0.5);
+
+//   return filtered;
+// };
+
+// export default async function Home() {
+//   const blogs = await getData();
+
+//   return (
+//     <div suppressHydrationWarning >
+//       <HeroSection />
+//       <AboutSection />
+//       <Experience />
+//       <Skills />
+//       <Projects />
+//       <Education />
+//       {/* <Blog blogs={blogs} /> */}
+//       <ContactSection />
+//     </div>
+//   )
+// };
+
+// app/page.js
+"use client"; // ensure client-side hooks like useEffect can run
+
+import { useEffect, useState } from "react";
 import { personalData } from "@/utils/data/personal-data";
+
 import AboutSection from "./components/homepage/about";
 import Blog from "./components/homepage/blog";
 import ContactSection from "./components/homepage/contact";
@@ -8,33 +54,46 @@ import HeroSection from "./components/homepage/hero-section";
 import Projects from "./components/homepage/projects";
 import Skills from "./components/homepage/skills";
 
-async function getData() {
-  const res = await fetch(`https://dev.to/api/articles?username=${personalData.devUsername}`)
+export default function Home() {
+  const [blogs, setBlogs] = useState([]);
 
-  if (!res.ok) {
-    throw new Error('Failed to fetch data')
-  }
+  useEffect(() => {
+    async function getData() {
+      try {
+        const res = await fetch(
+          `https://dev.to/api/articles?username=${personalData.devUsername}`
+        );
 
-  const data = await res.json();
+        if (!res.ok) {
+          throw new Error("Failed to fetch data");
+        }
 
-  const filtered = data.filter((item) => item?.cover_image).sort(() => Math.random() - 0.5);
+        const data = await res.json();
 
-  return filtered;
-};
+        const filtered = data
+          .filter((item) => item?.cover_image)
+          .sort(() => Math.random() - 0.5);
 
-export default async function Home() {
-  const blogs = await getData();
+        setBlogs(filtered);
+      } catch (error) {
+        console.error("Error fetching blogs:", error);
+      }
+    }
+
+    getData();
+  }, []);
 
   return (
-    <div suppressHydrationWarning >
+    <div suppressHydrationWarning>
       <HeroSection />
       <AboutSection />
       <Experience />
       <Skills />
       <Projects />
       <Education />
-      {/* <Blog blogs={blogs} /> */}
+      {/* only render Blog if we have data */}
+      {blogs.length > 0 && <Blog blogs={blogs} />}
       <ContactSection />
     </div>
-  )
-};
+  );
+}
